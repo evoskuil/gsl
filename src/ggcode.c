@@ -497,13 +497,15 @@ prepare_gsl_control_block (THREAD *thread, SYMTAB *switches)
     tcb-> gsl-> cobol      = (Bool) number_value (switch_value (switches,
                                                                 "cobol"));
     tcb-> gsl-> template   = (Bool) number_value (switch_value (switches,
-                                                               "template"));
+                                                                "template"));
     tcb-> gsl-> line       = NULL;      /*  No script line yet  */
     tcb-> gsl-> shuffle    = (int) number_value (switch_value (switches,
                                                                "shuffle"));
     tcb-> gsl-> terminator = mem_strdup (string_value (switch_value (switches,
                                                                      "terminator")));
-    tcb-> gsl-> escape = mem_strdup (string_value (switch_value (switches,
+    tcb-> gsl-> crlf       = mem_strdup (string_value (switch_value (switches,
+                                                                     "crlf")));
+    tcb-> gsl-> escape     = mem_strdup (string_value (switch_value (switches,
                                                                      "escape")));
     tcb-> gsl-> substitute = mem_strdup (string_value (switch_value (switches,
                                                                      "substitute")));
@@ -952,8 +954,9 @@ copy_gsl_control_block (GSL_CONTROL *to, GSL_CONTROL *from)
                                   : from-> template;
     to-> shuffle    = from-> shuffle;
     to-> terminator = mem_strdup (from-> terminator);
+    to-> crlf       = mem_strdup (from-> crlf);
     to-> argc       = from-> argc;
-    to-> argv = mem_alloc (to-> argc * sizeof (char *));
+    to-> argv       = mem_alloc (to-> argc * sizeof (char *));
     for (i = 0; i < to-> argc; i++)
         to-> argv [i] = mem_strdup (from-> argv [i]);
     to-> switches   = from-> switches;
@@ -1416,6 +1419,9 @@ output_the_line (char *line, Bool cobol)
           {
             out = ptr + 1;
             tcb-> gsl-> output_line++;
+
+            // GSL.terminator is deprecated becuase it is stepped on by file_write.
+            // Use GSL.crlf flags to control file_write's line termination.
             if (tcb-> gsl-> terminator && tcb-> gsl-> terminator [0])
                 send_text_to_output (tcb-> gsl-> terminator);
           }

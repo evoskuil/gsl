@@ -241,6 +241,7 @@ static int gsl_destroy (void *item)
     if (--gsl-> links == 0)
       {
         mem_free (gsl-> terminator);
+        mem_free (gsl-> crlf);
         mem_free (gsl-> escape);
         mem_free (gsl-> substitute);
         for (i = 0; i < gsl-> argc; i++)
@@ -316,6 +317,13 @@ static VALUE * gsl_get_attr (void *item, const char *name, Bool ignorecase)
       {
 
     assign_string (& value, gsl-> terminator);
+        
+      }
+    else
+    if (matches (name, "crlf"))
+      {
+
+    assign_string (& value, gsl-> crlf);
         
       }
     else
@@ -442,6 +450,35 @@ static int gsl_put_attr (void *item, const char *name, VALUE *value, Bool ignore
     mem_free (gsl-> terminator);
     gsl-> terminator = memt_strdup (NULL, string_value (value));
         
+      }
+    else
+    if (matches (name, "crlf"))
+      {
+
+    mem_free (gsl-> crlf);
+    gsl-> crlf = memt_strdup (NULL, string_value (value));
+
+    /*  This state may be overwritten any time a GSL file is read.        */
+    /*  See file_read and file_write for more information.                */
+    if (matches (gsl-> crlf, "false"))
+      {
+        file_crlf = FALSE;
+      }
+    else
+    if (matches (gsl-> crlf, "true"))
+      {
+        file_crlf = TRUE;
+      }
+    else
+    if (matches (gsl-> crlf, "auto"))
+      {
+#ifdef GATES_FILESYSTEM 
+        file_crlf = TRUE;
+#else
+        file_crlf = FALSE;
+#endif
+      }
+
       }
     else
     if (matches (name, "escape"))
@@ -613,6 +650,7 @@ static int gsl_class_init (CLASS_DESCRIPTOR **class, void **item, THREAD *gsl_th
     gsl-> line        = NULL;
     gsl-> shuffle     = 2;
     gsl-> terminator  = NULL;
+    gsl-> crlf        = NULL;
     gsl-> escape      = NULL;
     gsl-> substitute  = NULL;
     gsl-> argc        = 0;

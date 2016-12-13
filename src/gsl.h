@@ -1069,7 +1069,9 @@ typedef struct {
     int
         shuffle;                       /*  Min whitespace size for shuffle   */
     char
-        *terminator;                   /*  Line terminator string            */
+        *terminator;                   /*  Line terminator (deprecated)      */
+    char
+        *crlf;                         /*  CR/LF line ending flag            */
     char
         *escape;                       /*  Escape symbol, if not '\'         */
     char
